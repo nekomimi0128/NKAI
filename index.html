@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>NKAIチャット</title>
+  <style>
+    body { max-width: 600px; margin: 2em auto; font-family: sans-serif; }
+    #chat { border: 1px solid #ccc; padding: 1em; height: 300px; overflow-y: auto; }
+    #userInput { width: 80%; }
+    #sendBtn { width: 18%; }
+    .user { color: blue; }
+    .bot { color: green; }
+  </style>
+</head>
+<body>
+  <h1>NKAIチャット</h1>
+  <div id="chat"></div>
+  <input type="text" id="userInput" placeholder="話しかけてね" />
+  <button id="sendBtn">送信</button>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    function addChat(text, className) {
+      const p = document.createElement("p");
+      p.textContent = text;
+      p.className = className;
+      chat.appendChild(p);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      addChat("あなた: " + userText, "user");
+
+      try {
+        const response = await fetch("https://あなたの-render-url.onrender.com/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userText }),
+        });
+
+        if (!response.ok) {
+          addChat("エラーが発生しました。", "bot");
+          return;
+        }
+
+        const data = await response.json();
+        addChat("NKAI: " + data.response, "bot");
+      } catch (e) {
+        addChat("通信エラーです。", "bot");
+      }
+
+      input.value = "";
+      input.focus();
+    }
+
+    sendBtn.onclick = sendMessage;
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
